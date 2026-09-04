@@ -26,10 +26,10 @@ jobs:
           - os: windows-latest
             target: win-x64
             output: zenryn-windows-x64.exe
-          - os: macos-latest
+          - os: macos-13
             target: macos-x64
             output: zenryn-macos-x64
-          - os: macos-latest
+          - os: macos-14
             target: macos-arm64
             output: zenryn-macos-arm64
 

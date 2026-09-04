@@ -4,8 +4,8 @@
   "description": "ZenRyn Discord server backup export and import bot",
   "main": "dist/index.js",
   "scripts": {
-    "build": "node ./node_modules/esbuild/bin/esbuild scripts/build.ts --bundle --platform=node --outfile=dist/build.js && node dist/build.js",
-    "test": "node ./node_modules/esbuild/bin/esbuild tests/unit.test.ts --bundle --platform=node --outfile=dist/test.js && node dist/test.js",
+    "build": "esbuild scripts/build.ts --bundle --platform=node --outfile=dist/build.js && node dist/build.js",
+    "test": "esbuild tests/unit.test.ts --bundle --platform=node --outfile=dist/test.js && node dist/test.js",
     "package": "npm run build"
   },
   "keywords": [
