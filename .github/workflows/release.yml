@@ -10,8 +10,8 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build Multi-Arch Executables
+  build-and-release:
+    name: Build Multi-Arch Executables and Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -44,20 +44,6 @@ jobs:
           mv dist/binaries/bundle-macos-arm64 dist/binaries/zenryn-macos-arm64 || true
           ls -la dist/binaries
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: standalone-binaries
-          path: dist/binaries/*
-
-  release:
-    name: Create GitHub Release
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
       - name: Extract Version from README.md
         id: get_version
         run: |
@@ -68,17 +54,6 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Found version: $VERSION"
 
-      - name: Download All Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: release-binaries
-
-      - name: Prepare Assets
-        run: |
-          mkdir -p final-assets
-          find release-binaries -type f -exec cp {} final-assets/ \;
-          ls -la final-assets
-
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -86,6 +61,6 @@ jobs:
           name: ZenRyn Release ${{ steps.get_version.outputs.VERSION }}
           draft: false
           prerelease: false
-          files: final-assets/*
+          files: dist/binaries/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
