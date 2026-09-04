@@ -61,6 +61,11 @@ jobs:
           name: ZenRyn Release ${{ steps.get_version.outputs.VERSION }}
           draft: false
           prerelease: false
-          files: dist/binaries/*
+          files: |
+            dist/binaries/zenryn-windows-x64.exe
+            dist/binaries/zenryn-linux-x64
+            dist/binaries/zenryn-linux-arm64
+            dist/binaries/zenryn-macos-x64
+            dist/binaries/zenryn-macos-arm64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
