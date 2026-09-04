@@ -31,25 +31,27 @@ jobs:
 
       - name: Bundle with esbuild
         run: |
-          npx esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=dist/bundle.js --minify
+          npx esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=dist/zenryn.js --minify
 
       - name: Package with pkg for Windows, Linux, and macOS
         run: |
           mkdir -p dist/binaries
-          npx @yao-pkg/pkg dist/bundle.js --targets node18-linux-x64,node18-linux-arm64,node18-win-x64,node18-macos-x64,node18-macos-arm64 --output-path dist/binaries
-          mv dist/binaries/bundle-win-x64.exe dist/binaries/zenryn-windows-x64.exe || true
-          mv dist/binaries/bundle-linux-x64 dist/binaries/zenryn-linux-x64 || true
-          mv dist/binaries/bundle-linux-arm64 dist/binaries/zenryn-linux-arm64 || true
-          mv dist/binaries/bundle-macos-x64 dist/binaries/zenryn-macos-x64 || true
-          mv dist/binaries/bundle-macos-arm64 dist/binaries/zenryn-macos-arm64 || true
+          npx @yao-pkg/pkg dist/zenryn.js --targets node18-linux-x64,node18-linux-arm64,node18-win-x64,node18-macos-x64,node18-macos-arm64 --out-path dist/binaries
+          if [ -f dist/binaries/zenryn-win-x64.exe ]; then
+            cp dist/binaries/zenryn-win-x64.exe dist/binaries/zenryn-windows-x64.exe
+          fi
           ls -la dist/binaries
+          if [ -z "$(ls -A dist/binaries)" ]; then
+            echo "Error: No binaries were created!"
+            exit 1
+          fi
 
       - name: Extract Version from README.md
         id: get_version
         run: |
           VERSION=$(grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' README.md | tail -n 1)
           if [ -z "$VERSION" ]; then
-            VERSION="v1.0.0.1"
+            VERSION="v1.0.01.003"
           fi
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Found version: $VERSION"
@@ -62,6 +64,7 @@ jobs:
           draft: false
           prerelease: false
           make_latest: true
+          fail_on_unmatched_files: true
           files: dist/binaries/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
