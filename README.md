@@ -39,4 +39,4 @@ The standalone distribution binary will be output to `bin/zenryn-termux-arm64`.
 
 MIT
 
-v1.0.01.001
+v1.0.01.002

@@ -55,9 +55,13 @@ jobs:
           echo "Found version: $VERSION"
 
       - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          name: ZenRyn Release ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          make_latest: true
+          files: dist/binaries/*
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION="${{ steps.get_version.outputs.VERSION }}"
-          gh release delete "$VERSION" --yes || true
-          gh release create "$VERSION" --title "ZenRyn Release $VERSION" --notes "Automated multi-architecture standalone binary release for ZenRyn." dist/binaries/zenryn-*
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
