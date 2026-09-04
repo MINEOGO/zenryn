@@ -1,0 +1,27 @@
+{
+  "name": "zenryn",
+  "version": "1.0.0",
+  "description": "ZenRyn Discord server backup export and import bot",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "node ./node_modules/esbuild/bin/esbuild scripts/build.ts --bundle --platform=node --outfile=dist/build.js && node dist/build.js",
+    "test": "node ./node_modules/esbuild/bin/esbuild tests/unit.test.ts --bundle --platform=node --outfile=dist/test.js && node dist/test.js",
+    "package": "npm run build"
+  },
+  "keywords": [
+    "discord",
+    "backup",
+    "export",
+    "import",
+    "zenryn"
+  ],
+  "author": "ZenRyn Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "discord.js": "^14.27.0",
+    "esbuild": "^0.28.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^7.0.2"
+  }
+}

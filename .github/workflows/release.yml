@@ -1,0 +1,104 @@
+name: Build and Release Binaries
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Multi-Arch Executables
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-x64
+            output: zenryn-linux-x64
+          - os: ubuntu-latest
+            target: linux-arm64
+            output: zenryn-linux-arm64
+          - os: windows-latest
+            target: win-x64
+            output: zenryn-windows-x64.exe
+          - os: macos-latest
+            target: macos-x64
+            output: zenryn-macos-x64
+          - os: macos-latest
+            target: macos-arm64
+            output: zenryn-macos-arm64
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Run Tests
+        run: npm test
+
+      - name: Bundle with esbuild
+        run: |
+          npx esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=dist/bundle.js --minify
+
+      - name: Package with pkg
+        run: |
+          npx @yao-pkg/pkg dist/bundle.js --targets node18-${{ matrix.target }} --output dist/${{ matrix.output }}
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.output }}
+          path: dist/${{ matrix.output }}
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Extract Version from README.md
+        id: get_version
+        run: |
+          VERSION=$(grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' README.md | tail -n 1)
+          if [ -z "$VERSION" ]; then
+            VERSION="v1.0.0.1"
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Found version: $VERSION"
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-binaries
+
+      - name: Prepare Assets
+        run: |
+          mkdir -p final-assets
+          find release-binaries -type f -exec cp {} final-assets/ \;
+          ls -la final-assets
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          name: ZenRyn Release ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          files: final-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
